@@ -45,20 +45,45 @@ window.UI = {
   },
   togglePause() {
     const m = $('menu'), s = this.scene; if (!s) return;
-    if (m.hidden === false) { this.resume(); } else { s.scene.pause(); m.hidden = false; $('btn-play').textContent = 'Continuar'; $('btn-play').focus(); }
+    if (m.hidden === false) {
+      this.resume();
+    } else {
+      if (s.scene) s.scene.pause();
+      m.hidden = false;
+      $('btn-play').textContent = 'Continuar';
+      $('btn-play').focus();
+    }
   },
-  resume() { $('menu').hidden = true; $('settings').hidden = true; if (this.scene) this.scene.resume(); }
+  resume() {
+    $('menu').hidden = true;
+    $('settings').hidden = true;
+    const s = this.scene;
+    if (s && s.scene) {
+      s.scene.resume();
+      if (s.input && s.input.keyboard) {
+        s.input.keyboard.resetKeys();
+      }
+    }
+    if (window.game && window.game.canvas) {
+      window.game.canvas.focus();
+    }
+  }
 };
 
 Save.load();
-const game = new Phaser.Game({
+window.game = new Phaser.Game({
   type: Phaser.AUTO, parent: 'game', backgroundColor: '#1d2547', pixelArt: true,
   scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
   physics: { default: 'arcade', arcade: { debug: false } },
   scene: [BootScene, WorldScene]
 });
 
+let autoPauseTimer = null;
 $('btn-play').onclick = () => {
+  if (autoPauseTimer) {
+    clearInterval(autoPauseTimer);
+    autoPauseTimer = null;
+  }
   if (Music.enabled() && !Music.playing) {
     Music.start();
   }
@@ -165,6 +190,34 @@ window.addEventListener('keydown', e => {
   }
 }, true);
 
+// Suporte de movimentação pelo teclado via Input (WASD e Setas)
+window.addEventListener('keydown', e => {
+  if ($('menu') && !$('menu').hidden) return;
+  if ($('dialog') && !$('dialog').hidden) return;
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+  const k = (e.key || '').toLowerCase();
+  if (k === 'w' || e.key === 'ArrowUp') Input.up = true;
+  if (k === 's' || e.key === 'ArrowDown') Input.down = true;
+  if (k === 'a' || e.key === 'ArrowLeft') Input.left = true;
+  if (k === 'd' || e.key === 'ArrowRight') Input.right = true;
+  if (k === 'e' || e.key === ' ') Input.act = true;
+});
+
+window.addEventListener('keyup', e => {
+  const k = (e.key || '').toLowerCase();
+  if (k === 'w' || e.key === 'ArrowUp') Input.up = false;
+  if (k === 's' || e.key === 'ArrowDown') Input.down = false;
+  if (k === 'a' || e.key === 'ArrowLeft') Input.left = false;
+  if (k === 'd' || e.key === 'ArrowRight') Input.right = false;
+  if (k === 'e' || e.key === ' ') Input.act = false;
+});
+
+window.addEventListener('blur', () => {
+  Input.up = Input.down = Input.left = Input.right = Input.act = false;
+});
+
 // Controles de toque
 if (matchMedia('(pointer: coarse)').matches) $('touch').hidden = false;
 document.querySelectorAll('.dpad button').forEach(b => {
@@ -174,12 +227,15 @@ document.querySelectorAll('.dpad button').forEach(b => {
 });
 $('btn-act').addEventListener('click', () => window.UI.scene && window.UI.scene.interact());
 
-// Pausa automática no menu principal
-game.events.once('ready', () => {
-  const w = setInterval(() => {
-    if (window.UI.scene && window.UI.scene.scene.isActive()) {
-      window.UI.scene.scene.pause();
-      clearInterval(w);
+// Pausa automática no menu principal (apenas se o menu ainda estiver aberto)
+window.game.events.once('ready', () => {
+  autoPauseTimer = setInterval(() => {
+    if (window.UI.scene && window.UI.scene.scene && window.UI.scene.scene.isActive()) {
+      if ($('menu') && $('menu').hidden === false) {
+        window.UI.scene.scene.pause();
+      }
+      clearInterval(autoPauseTimer);
+      autoPauseTimer = null;
     }
   }, 50);
 });
