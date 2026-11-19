@@ -59,7 +59,9 @@ const game = new Phaser.Game({
 });
 
 $('btn-play').onclick = () => {
-  Music.start();
+  if (Music.enabled() && !Music.playing) {
+    Music.start();
+  }
   window.UI.resume();
   $('top-bar').hidden = false;
   $('hint').hidden = false;
@@ -75,7 +77,7 @@ $('btn-reset').onclick = () => { if (confirm('Apagar todo o progresso salvo?')) 
   $(id).onchange = e => { Save.data.settings[k] = e.target.checked; Save.save(); Save.applySettings(); };
 });
 
-// Controles de áudio e música
+// Controles de áudio e música (Configurações)
 $('opt-music').checked = Save.data.settings.music !== false;
 $('opt-music').onchange = e => {
   Save.data.settings.music = e.target.checked;
@@ -89,11 +91,29 @@ const selTrack = $('select-track');
 if (selTrack) {
   selTrack.value = String(Music.getTrackIndex());
   selTrack.onchange = e => {
-    const t = Music.setTrack(parseInt(e.target.value, 10));
+    const idx = parseInt(e.target.value, 10);
+    const t = Music.setTrack(idx);
     window.UI.showToast('🎵 ' + t.name);
   };
 }
 
+// Botões no Menu Principal
+const btnTrackMenu = $('btn-track-menu');
+if (btnTrackMenu) {
+  btnTrackMenu.onclick = () => {
+    const t = Music.nextTrack();
+    window.UI.showToast('🎵 ' + t.name);
+  };
+}
+const btnMuteMenu = $('btn-mute-menu');
+if (btnMuteMenu) {
+  btnMuteMenu.onclick = () => {
+    const enabled = Music.toggleMute();
+    window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+  };
+}
+
+// Botões no HUD superior
 $('btn-mute-hud').onclick = () => {
   const enabled = Music.toggleMute();
   window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
@@ -101,24 +121,49 @@ $('btn-mute-hud').onclick = () => {
 
 $('btn-track-hud').onclick = () => {
   const t = Music.nextTrack();
-  window.UI.showToast('🎵 Tocando: ' + t.name);
+  window.UI.showToast('🎵 ' + t.name);
 };
 
-// Teclado global
-document.addEventListener('keydown', e => {
-  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+// Funções de atalho com debounce
+let lastKeyAction = 0;
+window.handleMuteShortcut = function() {
+  const now = Date.now();
+  if (now - lastKeyAction < 200) return;
+  lastKeyAction = now;
+  const enabled = Music.toggleMute();
+  window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+};
+
+window.handleTrackShortcut = function() {
+  const now = Date.now();
+  if (now - lastKeyAction < 200) return;
+  lastKeyAction = now;
+  const t = Music.nextTrack();
+  window.UI.showToast('🎵 ' + t.name);
+};
+
+// Teclado global na fase de captura (window, capture: true)
+window.addEventListener('keydown', e => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  const isTextInput = tag === 'TEXTAREA' || (tag === 'INPUT' && e.target.type !== 'checkbox' && e.target.type !== 'radio');
+  if (isTextInput) return;
+
   if (e.key === 'Escape' && !$('settings').hidden) {
     $('set-back').click();
     return;
   }
-  if (e.key === 'm' || e.key === 'M') {
-    const enabled = Music.toggleMute();
-    window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
-  } else if (e.key === 't' || e.key === 'T') {
-    const t = Music.nextTrack();
-    window.UI.showToast('🎵 Tocando: ' + t.name);
+
+  // Tecla M para Mudo
+  if (e.key === 'm' || e.key === 'M' || e.code === 'KeyM' || e.keyCode === 77) {
+    e.preventDefault();
+    window.handleMuteShortcut();
   }
-});
+  // Tecla T para Trocar Música
+  else if (e.key === 't' || e.key === 'T' || e.code === 'KeyT' || e.keyCode === 84) {
+    e.preventDefault();
+    window.handleTrackShortcut();
+  }
+}, true);
 
 // Controles de toque
 if (matchMedia('(pointer: coarse)').matches) $('touch').hidden = false;

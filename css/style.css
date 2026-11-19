@@ -232,6 +232,21 @@ body {
   outline-offset: 2px
 }
 
+.menu-audio-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.menu-audio-box .btn {
+  margin: 0;
+  min-height: 48px;
+  font-size: calc(var(--fs)*0.65);
+  padding: 8px 10px;
+  text-align: center;
+}
+
 .toast {
   position: absolute;
   top: 68px;

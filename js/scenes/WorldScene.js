@@ -42,6 +42,8 @@ class WorldScene extends Phaser.Scene {
     this.talking = false; this.regionId = 0;
     this.keys.E.on('down', () => this.interact()); this.keys.SPACE.on('down', () => this.interact());
     this.keys.ESC.on('down', () => window.UI.togglePause());
+    this.input.keyboard.on('keydown-M', () => window.handleMuteShortcut && window.handleMuteShortcut());
+    this.input.keyboard.on('keydown-T', () => window.handleTrackShortcut && window.handleTrackShortcut());
     window.UI.bindScene(this); this.refreshMarks();
   }
   refreshMarks() { this.npcs.forEach(n => n.mark.setVisible(!Save.data.stars.includes(n.npc.id))); }

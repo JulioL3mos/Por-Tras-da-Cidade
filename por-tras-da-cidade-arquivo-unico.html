@@ -38,6 +38,9 @@ html,body{margin:0;height:100%;background:var(--ink);color:var(--ink);font-famil
 .opt-row label{font-weight:600}
 .select-track{width:100%;min-height:50px;padding:8px 12px;font:inherit;font-weight:700;background:var(--paper);border:4px solid var(--ink);color:var(--ink);box-shadow:0 4px 0 var(--ink);cursor:pointer}
 .select-track:focus-visible{outline:5px solid var(--brick);outline-offset:2px}
+.menu-audio-box{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.menu-audio-box .btn{margin:0;min-height:48px;font-size:calc(var(--fs)*0.65);padding:8px 10px;text-align:center}
+@media (max-width:600px){.menu-audio-box{grid-template-columns:1fr}}
 .toast{position:absolute;top:68px;right:12px;background:var(--paper);border:4px solid var(--ink);padding:8px 14px;font-family:'Press Start 2P',monospace;font-size:calc(var(--fs)*0.55);z-index:9;box-shadow:4px 4px 0 var(--ink);pointer-events:none;transition:opacity 0.25s ease}
 #touch{position:absolute;inset:auto 0 max(14px,env(safe-area-inset-bottom)) 0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;pointer-events:none;z-index:6}
 #touch>*{pointer-events:auto}
@@ -83,6 +86,10 @@ body.calm *{transition:none!important;animation:none!important}
       <h1 id="menu-title">Por Trás da Cidade</h1>
       <p class="slogan">Nem todo herói usa capa. Alguns fazem a cidade funcionar.</p>
       <button id="btn-play" class="btn">Jogar</button>
+      <div class="menu-audio-box">
+        <button id="btn-track-menu" class="btn ghost small" type="button" aria-label="Trocar música">🎵 1. Vila Chiptune</button>
+        <button id="btn-mute-menu" class="btn ghost small" type="button" aria-label="Alternar mudo">🔊 Som Ligado</button>
+      </div>
       <button id="btn-settings" class="btn">Configurações & Áudio</button>
       <button id="btn-reset" class="btn ghost">Apagar progresso</button>
     </div>
@@ -233,10 +240,18 @@ const Music = {
   startSynth() {
     this.initSynth();
     if (!this.ctx) return;
-    if (this.ctx.state === 'suspended') this.ctx.resume();
-    if (this.timer) clearInterval(this.timer);
-    this.next = this.ctx.currentTime + 0.1;
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    this.next = this.ctx.currentTime + 0.05;
     this.timer = setInterval(() => {
+      if (this.next < this.ctx.currentTime) {
+        this.next = this.ctx.currentTime + 0.05;
+      }
       while (this.next < this.ctx.currentTime + 0.25) {
         this.schedule(this.step, this.next);
         this.step = (this.step + 1) % 32;
@@ -246,7 +261,10 @@ const Music = {
   },
 
   stopSynth() {
-    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
     if (this.ctx && this.ctx.state === 'running') {
       this.ctx.suspend().catch(() => {});
     }
@@ -255,14 +273,24 @@ const Music = {
   startAudio() {
     this.initAudio();
     if (!this.audioEl) return;
-    this.audioEl.play().catch(e => {
-      console.warn("Reprodução automática de áudio aguardando interação:", e);
-    });
+    try {
+      if (this.audioEl.readyState >= 1) {
+        this.audioEl.currentTime = 0;
+      }
+    } catch (e) {}
+    const p = this.audioEl.play();
+    if (p && typeof p.then === 'function') {
+      p.catch(e => {
+        console.warn("Reprodução de áudio aguardando interação:", e);
+      });
+    }
   },
 
   stopAudio() {
     if (this.audioEl) {
-      this.audioEl.pause();
+      try {
+        this.audioEl.pause();
+      } catch (e) {}
     }
   },
 
@@ -299,13 +327,14 @@ const Music = {
     index = ((index % this.tracks.length) + this.tracks.length) % this.tracks.length;
     Save.data.settings.trackIndex = index;
     Save.save();
-    if (this.playing && this.enabled()) {
-      this.stopCurrent();
+
+    this.stopCurrent();
+    if (this.enabled()) {
+      this.playing = true;
       const track = this.getCurrentTrack();
       if (track.type === 'synth') {
         this.startSynth();
       } else {
-        if (this.audioEl) this.audioEl.currentTime = 0;
         this.startAudio();
       }
     }
@@ -336,12 +365,15 @@ const Music = {
     const track = this.getCurrentTrack();
     const trackIdx = this.getTrackIndex();
 
+    // 1. Checkbox em Configurações
     const chk = document.getElementById('opt-music');
     if (chk) chk.checked = !isMuted;
 
+    // 2. Select em Configurações
     const sel = document.getElementById('select-track');
     if (sel && sel.value != trackIdx) sel.value = String(trackIdx);
 
+    // 3. Botão Mudo no HUD do jogo
     const btnMute = document.getElementById('btn-mute-hud');
     if (btnMute) {
       btnMute.textContent = isMuted ? '🔇' : '🔊';
@@ -350,11 +382,25 @@ const Music = {
       btnMute.classList.toggle('is-muted', isMuted);
     }
 
+    // 4. Botão Trilha no HUD do jogo
     const btnTrack = document.getElementById('btn-track-hud');
     if (btnTrack) {
       btnTrack.textContent = '🎵 ' + (trackIdx + 1);
       btnTrack.title = 'Trocar música (Tecla T) — Atual: ' + track.name;
       btnTrack.setAttribute('aria-label', 'Trocar música (Tecla T) — Atual: ' + track.name);
+    }
+
+    // 5. Botões no Menu Principal
+    const btnTrackMenu = document.getElementById('btn-track-menu');
+    if (btnTrackMenu) {
+      btnTrackMenu.textContent = '🎵 ' + track.name;
+      btnTrackMenu.title = 'Trocar música (Tecla T)';
+    }
+    const btnMuteMenu = document.getElementById('btn-mute-menu');
+    if (btnMuteMenu) {
+      btnMuteMenu.textContent = isMuted ? '🔇 Áudio Desativado' : '🔊 Som Ligado';
+      btnMuteMenu.title = 'Alternar mudo (Tecla M)';
+      btnMuteMenu.classList.toggle('is-muted', isMuted);
     }
   }
 };
@@ -579,6 +625,8 @@ class WorldScene extends Phaser.Scene {
     this.talking = false; this.regionId = 0;
     this.keys.E.on('down', () => this.interact()); this.keys.SPACE.on('down', () => this.interact());
     this.keys.ESC.on('down', () => window.UI.togglePause());
+    this.input.keyboard.on('keydown-M', () => window.handleMuteShortcut && window.handleMuteShortcut());
+    this.input.keyboard.on('keydown-T', () => window.handleTrackShortcut && window.handleTrackShortcut());
     window.UI.bindScene(this); this.refreshMarks();
   }
   refreshMarks() { this.npcs.forEach(n => n.mark.setVisible(!Save.data.stars.includes(n.npc.id))); }
@@ -670,7 +718,9 @@ const game = new Phaser.Game({
 });
 const started = () => !!window.UI.scene;
 $('btn-play').onclick = () => {
-  Music.start();
+  if (Music.enabled() && !Music.playing) {
+    Music.start();
+  }
   window.UI.resume();
   $('top-bar').hidden = false;
   $('hint').hidden = false;
@@ -684,7 +734,7 @@ $('btn-reset').onclick = () => { if (confirm('Apagar todo o progresso salvo?')) 
   $(id).onchange = e => { Save.data.settings[k] = e.target.checked; Save.save(); Save.applySettings(); };
 });
 
-// Controles de áudio e música
+// Controles de áudio e música (Configurações)
 $('opt-music').checked = Save.data.settings.music !== false;
 $('opt-music').onchange = e => {
   Save.data.settings.music = e.target.checked;
@@ -698,11 +748,29 @@ const selTrack = $('select-track');
 if (selTrack) {
   selTrack.value = String(Music.getTrackIndex());
   selTrack.onchange = e => {
-    const t = Music.setTrack(parseInt(e.target.value, 10));
+    const idx = parseInt(e.target.value, 10);
+    const t = Music.setTrack(idx);
     window.UI.showToast('🎵 ' + t.name);
   };
 }
 
+// Botões no Menu Principal
+const btnTrackMenu = $('btn-track-menu');
+if (btnTrackMenu) {
+  btnTrackMenu.onclick = () => {
+    const t = Music.nextTrack();
+    window.UI.showToast('🎵 ' + t.name);
+  };
+}
+const btnMuteMenu = $('btn-mute-menu');
+if (btnMuteMenu) {
+  btnMuteMenu.onclick = () => {
+    const enabled = Music.toggleMute();
+    window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+  };
+}
+
+// Botões no HUD superior
 $('btn-mute-hud').onclick = () => {
   const enabled = Music.toggleMute();
   window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
@@ -710,24 +778,49 @@ $('btn-mute-hud').onclick = () => {
 
 $('btn-track-hud').onclick = () => {
   const t = Music.nextTrack();
-  window.UI.showToast('🎵 Tocando: ' + t.name);
+  window.UI.showToast('🎵 ' + t.name);
 };
 
-// Teclado global
-document.addEventListener('keydown', e => {
-  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+// Funções de atalho com debounce
+let lastKeyAction = 0;
+window.handleMuteShortcut = function() {
+  const now = Date.now();
+  if (now - lastKeyAction < 200) return;
+  lastKeyAction = now;
+  const enabled = Music.toggleMute();
+  window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+};
+
+window.handleTrackShortcut = function() {
+  const now = Date.now();
+  if (now - lastKeyAction < 200) return;
+  lastKeyAction = now;
+  const t = Music.nextTrack();
+  window.UI.showToast('🎵 ' + t.name);
+};
+
+// Teclado global na fase de captura (window, capture: true)
+window.addEventListener('keydown', e => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  const isTextInput = tag === 'TEXTAREA' || (tag === 'INPUT' && e.target.type !== 'checkbox' && e.target.type !== 'radio');
+  if (isTextInput) return;
+
   if (e.key === 'Escape' && !$('settings').hidden) {
     $('set-back').click();
     return;
   }
-  if (e.key === 'm' || e.key === 'M') {
-    const enabled = Music.toggleMute();
-    window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
-  } else if (e.key === 't' || e.key === 'T') {
-    const t = Music.nextTrack();
-    window.UI.showToast('🎵 Tocando: ' + t.name);
+
+  // Tecla M para Mudo
+  if (e.key === 'm' || e.key === 'M' || e.code === 'KeyM' || e.keyCode === 77) {
+    e.preventDefault();
+    window.handleMuteShortcut();
   }
-});
+  // Tecla T para Trocar Música
+  else if (e.key === 't' || e.key === 'T' || e.code === 'KeyT' || e.keyCode === 84) {
+    e.preventDefault();
+    window.handleTrackShortcut();
+  }
+}, true);
 
 // Controles de toque (aparecem em telas sensíveis ao toque)
 if (matchMedia('(pointer: coarse)').matches) $('touch').hidden = false;
