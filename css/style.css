@@ -32,3 +32,6 @@ body.calm *{transition:none!important;animation:none!important}
 #dlg-clues{margin:0 0 12px;padding-left:22px;line-height:1.5}#dlg-clues[hidden]{display:none}
 #dlg-fb{margin:10px 0 0;font-weight:700;min-height:1.2em}#dlg-opts .btn{background:var(--paper);color:var(--ink);text-align:left}
 #dialog{max-height:85vh;overflow:auto}
+#game{touch-action:none}.btn,.dpad button{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+@media (max-height:520px){#dialog{max-height:62vh;padding:12px}.btn{min-height:48px}#touch{bottom:6px}.hud{font-size:10px}#hint{display:none}}
+@media (max-width:600px){:root{--fs:17px}.panel{padding:14px}}

@@ -48,7 +48,7 @@ const game = new Phaser.Game({
   scene: [BootScene, WorldScene]
 });
 const started = () => !!window.UI.scene;
-$('btn-play').onclick = () => { window.UI.resume(); $('btn-pause').hidden = false; $('hint').hidden = false; };
+$('btn-play').onclick = () => { Music.start(); window.UI.resume(); $('btn-pause').hidden = false; $('hint').hidden = false; };
 $('btn-pause').onclick = () => window.UI.togglePause();
 $('btn-settings').onclick = () => { $('settings').hidden = false; $('menu').hidden = true; $('opt-contrast').focus(); };
 $('set-back').onclick = () => { $('settings').hidden = true; $('menu').hidden = false; $('btn-settings').focus(); };
@@ -68,3 +68,9 @@ document.querySelectorAll('.dpad button').forEach(b => {
 $('btn-act').addEventListener('click', () => window.UI.scene && window.UI.scene.interact());
 // Pausa automática: o jogo começa pausado atrás do menu principal
 game.events.once('ready', () => { const w = setInterval(() => { if (window.UI.scene && window.UI.scene.scene.isActive()) { window.UI.scene.scene.pause(); clearInterval(w); } }, 50); });
+// Ajustes para celular e instalação como app
+if (matchMedia('(pointer: coarse)').matches) $('hint').textContent = 'Chegue perto de uma pessoa e toque no botão E';
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+$('opt-music').checked = Save.data.settings.music !== false;
+$('opt-music').onchange = e => { Save.data.settings.music = e.target.checked; Save.save(); e.target.checked ? Music.start() : Music.stop(); };

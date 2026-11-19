@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Por Trás da Cidade</title>
+<meta name="theme-color" content="#1d2547"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>Por Trás da Cidade</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -38,6 +38,7 @@
       <label class="opt"><input type="checkbox" id="opt-contrast"> Alto contraste</label>
       <label class="opt"><input type="checkbox" id="opt-bigfont"> Letras maiores</label>
       <label class="opt"><input type="checkbox" id="opt-calm"> Reduzir animações</label>
+      <label class="opt"><input type="checkbox" id="opt-music"> Música</label>
       <button id="set-back" class="btn">Voltar</button>
     </div>
   </section>
@@ -54,8 +55,9 @@
     <button id="btn-act" class="btn act" aria-label="Interagir">E</button>
   </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<script src="js/lib/phaser.min.js"></script>
 <script src="js/state.js"></script>
+<script src="js/music.js"></script>
 <script src="js/data/npcs.js"></script>
 <script src="js/data/missions.js"></script>
 <script src="js/scenes/BootScene.js"></script>
