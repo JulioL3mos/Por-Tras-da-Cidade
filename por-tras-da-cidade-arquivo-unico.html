@@ -15,21 +15,30 @@ html,body{margin:0;height:100%;background:var(--ink);color:var(--ink);font-famil
 #wrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #game{width:100%;height:100%}#game canvas{image-rendering:pixelated}
 .hud{position:absolute;left:12px;margin:0;padding:8px 12px;background:var(--paper);border:4px solid var(--ink);font-family:'Press Start 2P',monospace;font-size:calc(var(--fs)*.55);pointer-events:none}
-#region{top:12px}#hint{top:64px;font-family:system-ui}
+#region{top:12px;max-width:calc(100% - 210px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint{top:64px;font-family:system-ui}
 .panel{background:var(--paper);border:6px solid var(--ink);box-shadow:0 0 0 4px var(--sun),8px 8px 0 4px rgba(0,0,0,.35);padding:20px;max-width:560px;width:92%}
 .panel h1,.panel h2{font-family:'Press Start 2P',monospace;line-height:1.5;margin:0 0 12px;font-size:calc(var(--fs)*1.1)}
 .slogan{margin:0 0 18px}
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(29,37,71,.88);z-index:10}
-.overlay[hidden],#dialog[hidden],#touch[hidden],#btn-pause[hidden],.hud[hidden]{display:none}
+.overlay[hidden],#dialog[hidden],#touch[hidden],#top-bar[hidden],#btn-pause[hidden],.hud[hidden],.toast[hidden]{display:none}
 #dialog{position:absolute;bottom:max(16px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:8;max-width:760px}
 #dlg-text{margin:0 0 14px;line-height:1.5}
 .btn{display:block;width:100%;min-height:56px;margin:10px 0 0;padding:12px 16px;font:inherit;font-weight:700;color:var(--paper);background:var(--sky);border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink);cursor:pointer}
 .btn.ghost{background:var(--paper);color:var(--ink)}
 .btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
 :focus-visible{outline:5px solid var(--brick);outline-offset:3px}
-.btn.small{position:absolute;top:12px;right:12px;width:auto;z-index:5;margin:0}
+.btn.small{position:relative;width:auto;min-height:44px;z-index:5;margin:0;padding:8px 12px;font-size:calc(var(--fs)*0.75)}
+.top-bar{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:5}
+.top-bar .btn.small{box-shadow:0 4px 0 var(--ink)}
+.btn.is-muted{background:var(--brick)!important}
 .opt{display:flex;align-items:center;gap:14px;min-height:56px;font-weight:600}
 .opt input{width:32px;height:32px}
+.opt-row{display:flex;flex-direction:column;gap:8px;margin:12px 0 8px}
+.opt-row label{font-weight:600}
+.select-track{width:100%;min-height:50px;padding:8px 12px;font:inherit;font-weight:700;background:var(--paper);border:4px solid var(--ink);color:var(--ink);box-shadow:0 4px 0 var(--ink);cursor:pointer}
+.select-track:focus-visible{outline:5px solid var(--brick);outline-offset:2px}
+.toast{position:absolute;top:68px;right:12px;background:var(--paper);border:4px solid var(--ink);padding:8px 14px;font-family:'Press Start 2P',monospace;font-size:calc(var(--fs)*0.55);z-index:9;box-shadow:4px 4px 0 var(--ink);pointer-events:none;transition:opacity 0.25s ease}
 #touch{position:absolute;inset:auto 0 max(14px,env(safe-area-inset-bottom)) 0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 18px;pointer-events:none;z-index:6}
 #touch>*{pointer-events:auto}
 .dpad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,64px);gap:6px;grid-template-areas:". up ." "left down right"}
@@ -41,6 +50,16 @@ body.calm *{transition:none!important;animation:none!important}
 #dlg-clues{margin:0 0 12px;padding-left:22px;line-height:1.5}#dlg-clues[hidden]{display:none}
 #dlg-fb{margin:10px 0 0;font-weight:700;min-height:1.2em}#dlg-opts .btn{background:var(--paper);color:var(--ink);text-align:left}
 #dialog{max-height:85vh;overflow:auto}
+#game{touch-action:none}.btn,.dpad button,.select-track{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+@media (max-height:520px){#dialog{max-height:62vh;padding:12px}.btn{min-height:48px}#touch{bottom:6px}.hud{font-size:10px}#hint{display:none}}
+@media (max-width:600px){
+  :root{--fs:17px}.panel{padding:14px}
+  .top-bar{gap:4px;right:8px;top:8px}
+  .top-bar .btn.small{padding:6px 8px;min-height:38px;font-size:12px}
+  #region{max-width:calc(100% - 170px);top:8px;left:8px;font-size:10px;padding:6px 8px}
+  #hint{top:54px;left:8px}
+  .toast{top:54px;right:8px;font-size:10px}
+}
 
 </style>
 </head>
@@ -49,6 +68,7 @@ body.calm *{transition:none!important;animation:none!important}
   <div id="game" role="img" aria-label="Mapa de Vila Horizonte, visto de cima. Use o teclado ou o direcional na tela para andar."></div>
   <p id="region" class="hud" aria-live="polite"></p>
   <p id="hint" class="hud">Chegue perto de uma pessoa e aperte E ou Espaço</p>
+  <div id="toast" class="toast" aria-live="polite" hidden></div>
 
   <section id="dialog" class="panel" role="dialog" aria-modal="true" aria-labelledby="dlg-name" hidden>
     <h2 id="dlg-name"></h2><p id="dlg-text"></p>
@@ -63,22 +83,34 @@ body.calm *{transition:none!important;animation:none!important}
       <h1 id="menu-title">Por Trás da Cidade</h1>
       <p class="slogan">Nem todo herói usa capa. Alguns fazem a cidade funcionar.</p>
       <button id="btn-play" class="btn">Jogar</button>
-      <button id="btn-settings" class="btn">Acessibilidade</button>
+      <button id="btn-settings" class="btn">Configurações & Áudio</button>
       <button id="btn-reset" class="btn ghost">Apagar progresso</button>
     </div>
   </section>
 
   <section id="settings" class="overlay" role="dialog" aria-modal="true" aria-labelledby="set-title" hidden>
     <div class="panel">
-      <h2 id="set-title">Acessibilidade</h2>
+      <h2 id="set-title">Configurações & Áudio</h2>
       <label class="opt"><input type="checkbox" id="opt-contrast"> Alto contraste</label>
       <label class="opt"><input type="checkbox" id="opt-bigfont"> Letras maiores</label>
       <label class="opt"><input type="checkbox" id="opt-calm"> Reduzir animações</label>
+      <label class="opt"><input type="checkbox" id="opt-music"> Som / Música ligada</label>
+      <div class="opt-row">
+        <label for="select-track">Trilha sonora:</label>
+        <select id="select-track" class="select-track">
+          <option value="0">1. Vila Chiptune (8-bit original)</option>
+          <option value="1">2. Tema da Cidade (Nova trilha)</option>
+        </select>
+      </div>
       <button id="set-back" class="btn">Voltar</button>
     </div>
   </section>
 
-  <button id="btn-pause" class="btn small" aria-label="Pausar e abrir o menu" hidden>Menu</button>
+  <div id="top-bar" class="top-bar" hidden>
+    <button id="btn-mute-hud" class="btn small" aria-label="Alternar som (M)" title="Mudo (tecla M)">🔊</button>
+    <button id="btn-track-hud" class="btn small" aria-label="Trocar música (T)" title="Trocar música (tecla T)">🎵 1</button>
+    <button id="btn-pause" class="btn small" aria-label="Pausar e abrir o menu">Menu</button>
+  </div>
 
   <div id="touch" hidden>
     <div class="dpad" role="group" aria-label="Direcional">
@@ -95,23 +127,249 @@ body.calm *{transition:none!important;animation:none!important}
 // Estado global e salvamento automático (localStorage)
 const Save = {
   key: 'por-tras-da-cidade-v1',
-  data: { stars: [], settings: { contrast: false, bigfont: false, calm: false } },
+  data: { stars: [], settings: { contrast: false, bigfont: false, calm: false, music: true, trackIndex: 0 } },
   load() {
-    try { Object.assign(this.data, JSON.parse(localStorage.getItem(this.key)) || {}); } catch (e) {}
+    try {
+      const stored = JSON.parse(localStorage.getItem(this.key));
+      if (stored) {
+        if (Array.isArray(stored.stars)) this.data.stars = stored.stars;
+        if (stored.settings) Object.assign(this.data.settings, stored.settings);
+      }
+    } catch (e) {}
     this.applySettings();
   },
   save() { try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) {} },
   reset() { this.data.stars = []; this.save(); },
   applySettings() {
     const s = this.data.settings;
-    document.body.classList.toggle('contrast', s.contrast);
-    document.body.classList.toggle('bigfont', s.bigfont);
-    document.body.classList.toggle('calm', s.calm);
+    document.body.classList.toggle('contrast', !!s.contrast);
+    document.body.classList.toggle('bigfont', !!s.bigfont);
+    document.body.classList.toggle('calm', !!s.calm);
   }
 };
 // Entrada compartilhada entre teclado e toque
 const Input = { up: false, down: false, left: false, right: false, act: false };
 
+</script>
+<script>
+// Trilha sonora de "Por Trás da Cidade":
+// Trilha 1: "Vila Chiptune (8-bit)" - chiptune procedural via Web Audio API.
+// Trilha 2: "Tema da Cidade" - trilha completa importada (audio/tema-cidade.wav).
+
+const Music = {
+  ctx: null, master: null, timer: null, step: 0, next: 0, playing: false,
+  bpm: 112,
+  chordsRoot: [36, 33, 41, 43], // baixo: C, Am, F, G
+  melody: [76,79,76,72,74,76,79,0,  69,72,76,72,69,72,71,0,  69,72,77,72,81,79,77,76,  74,79,83,79,74,76,74,0],
+  
+  tracks: [
+    { id: 'synth', name: '1. Vila Chiptune (8-bit)', type: 'synth' },
+    { id: 'theme', name: '2. Tema da Cidade', type: 'audio', src: 'audio/tema-cidade.wav' }
+  ],
+  audioEl: null,
+
+  enabled() {
+    return Save.data.settings.music !== false;
+  },
+
+  getTrackIndex() {
+    const idx = Save.data.settings.trackIndex;
+    return (typeof idx === 'number' && idx >= 0 && idx < this.tracks.length) ? idx : 0;
+  },
+
+  getCurrentTrack() {
+    return this.tracks[this.getTrackIndex()];
+  },
+
+  hz(n) { return 440 * Math.pow(2, (n - 69) / 12); },
+
+  initSynth() {
+    if (this.ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.12;
+    this.master.connect(this.ctx.destination);
+    const len = this.ctx.sampleRate * 0.05,
+          buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate),
+          d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    this.noise = buf;
+  },
+
+  initAudio() {
+    if (this.audioEl) return;
+    this.audioEl = new Audio('audio/tema-cidade.wav');
+    this.audioEl.loop = true;
+    this.audioEl.volume = 0.55;
+    this.audioEl.preload = 'auto';
+  },
+
+  tone(n, t, dur, type, vol) {
+    if (!this.ctx) return;
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.value = this.hz(n);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t + dur + 0.02);
+  },
+
+  schedule(s, t) {
+    const dur = 60 / this.bpm / 2, bar = Math.floor(s / 8) % 4, beat = s % 8;
+    if (this.melody[s]) this.tone(this.melody[s], t, dur * 1.6, 'square', 0.35);
+    if (beat % 4 === 0) this.tone(this.chordsRoot[bar], t, dur * 3.5, 'triangle', 0.9);
+    if (beat % 2 === 1) this.tone(this.chordsRoot[bar] + 12 + (beat === 3 || beat === 7 ? 7 : 4), t, dur * 0.8, 'square', 0.12);
+    if (beat % 2 === 1) {
+      const n = this.ctx.createBufferSource(), g = this.ctx.createGain();
+      n.buffer = this.noise; g.gain.value = 0.25;
+      n.connect(g); g.connect(this.master);
+      n.start(t);
+    }
+  },
+
+  startSynth() {
+    this.initSynth();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.timer) clearInterval(this.timer);
+    this.next = this.ctx.currentTime + 0.1;
+    this.timer = setInterval(() => {
+      while (this.next < this.ctx.currentTime + 0.25) {
+        this.schedule(this.step, this.next);
+        this.step = (this.step + 1) % 32;
+        this.next += 60 / this.bpm / 2;
+      }
+    }, 60);
+  },
+
+  stopSynth() {
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    if (this.ctx && this.ctx.state === 'running') {
+      this.ctx.suspend().catch(() => {});
+    }
+  },
+
+  startAudio() {
+    this.initAudio();
+    if (!this.audioEl) return;
+    this.audioEl.play().catch(e => {
+      console.warn("Reprodução automática de áudio aguardando interação:", e);
+    });
+  },
+
+  stopAudio() {
+    if (this.audioEl) {
+      this.audioEl.pause();
+    }
+  },
+
+  stopCurrent() {
+    this.stopSynth();
+    this.stopAudio();
+  },
+
+  start() {
+    this.playing = true;
+    if (!this.enabled()) {
+      this.stopCurrent();
+      this.updateUI();
+      return;
+    }
+    const track = this.getCurrentTrack();
+    if (track.type === 'synth') {
+      this.stopAudio();
+      this.startSynth();
+    } else {
+      this.stopSynth();
+      this.startAudio();
+    }
+    this.updateUI();
+  },
+
+  stop() {
+    this.playing = false;
+    this.stopCurrent();
+    this.updateUI();
+  },
+
+  setTrack(index) {
+    index = ((index % this.tracks.length) + this.tracks.length) % this.tracks.length;
+    Save.data.settings.trackIndex = index;
+    Save.save();
+    if (this.playing && this.enabled()) {
+      this.stopCurrent();
+      const track = this.getCurrentTrack();
+      if (track.type === 'synth') {
+        this.startSynth();
+      } else {
+        if (this.audioEl) this.audioEl.currentTime = 0;
+        this.startAudio();
+      }
+    }
+    this.updateUI();
+    return this.getCurrentTrack();
+  },
+
+  nextTrack() {
+    const nextIdx = (this.getTrackIndex() + 1) % this.tracks.length;
+    return this.setTrack(nextIdx);
+  },
+
+  toggleMute() {
+    const nextEnabled = !this.enabled();
+    Save.data.settings.music = nextEnabled;
+    Save.save();
+    if (nextEnabled) {
+      this.start();
+    } else {
+      this.stopCurrent();
+    }
+    this.updateUI();
+    return nextEnabled;
+  },
+
+  updateUI() {
+    const isMuted = !this.enabled();
+    const track = this.getCurrentTrack();
+    const trackIdx = this.getTrackIndex();
+
+    const chk = document.getElementById('opt-music');
+    if (chk) chk.checked = !isMuted;
+
+    const sel = document.getElementById('select-track');
+    if (sel && sel.value != trackIdx) sel.value = String(trackIdx);
+
+    const btnMute = document.getElementById('btn-mute-hud');
+    if (btnMute) {
+      btnMute.textContent = isMuted ? '🔇' : '🔊';
+      btnMute.title = isMuted ? 'Desmutar (Tecla M)' : 'Mudo (Tecla M)';
+      btnMute.setAttribute('aria-label', isMuted ? 'Desmutar som (Tecla M)' : 'Mutar som (Tecla M)');
+      btnMute.classList.toggle('is-muted', isMuted);
+    }
+
+    const btnTrack = document.getElementById('btn-track-hud');
+    if (btnTrack) {
+      btnTrack.textContent = '🎵 ' + (trackIdx + 1);
+      btnTrack.title = 'Trocar música (Tecla T) — Atual: ' + track.name;
+      btnTrack.setAttribute('aria-label', 'Trocar música (Tecla T) — Atual: ' + track.name);
+    }
+  }
+};
+
+document.addEventListener('visibilitychange', () => {
+  if (!Music.playing) return;
+  if (document.hidden) {
+    if (Music.ctx && Music.ctx.state === 'running') Music.ctx.suspend().catch(() => {});
+    if (Music.audioEl && !Music.audioEl.paused) Music.audioEl.pause();
+  } else if (Music.enabled()) {
+    const track = Music.getCurrentTrack();
+    if (track.type === 'synth' && Music.ctx) Music.ctx.resume().catch(() => {});
+    else if (track.type === 'audio' && Music.audioEl) Music.audioEl.play().catch(() => {});
+  }
+});
 </script>
 <script>
 // 12 personagens (um por missão). x,y em tiles. As missões completas entram na Etapa 3 (js/data/missions.js).
@@ -355,10 +613,19 @@ class WorldScene extends Phaser.Scene {
 // Interface DOM (menus, diálogos, toque) + inicialização do Phaser.
 const $ = id => document.getElementById(id);
 window.UI = {
-  scene: null, lastFocus: null,
+  scene: null, lastFocus: null, toastTimer: null,
   bindScene(s) { this.scene = s; },
   regionName: '',
   announceRegion(n) { if (n) this.regionName = n; $('region').textContent = 'Região: ' + this.regionName + ' | Estrelas: ' + Save.data.stars.length + '/12'; },
+  showToast(msg) {
+    const t = $('toast'); if (!t) return;
+    t.textContent = msg; t.hidden = false; t.style.opacity = '1';
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => { t.hidden = true; }, 250);
+    }, 2200);
+  },
   openDialog(npc, onClose) {
     const m = MISSIONS[npc.id], dlg = $('dialog'), text = $('dlg-text'), list = $('dlg-clues'), opts = $('dlg-opts'), fb = $('dlg-fb'), ok = $('dlg-ok');
     const close = () => { dlg.hidden = true; onClose(); };
@@ -402,7 +669,12 @@ const game = new Phaser.Game({
   scene: [BootScene, WorldScene]
 });
 const started = () => !!window.UI.scene;
-$('btn-play').onclick = () => { window.UI.resume(); $('btn-pause').hidden = false; $('hint').hidden = false; };
+$('btn-play').onclick = () => {
+  Music.start();
+  window.UI.resume();
+  $('top-bar').hidden = false;
+  $('hint').hidden = false;
+};
 $('btn-pause').onclick = () => window.UI.togglePause();
 $('btn-settings').onclick = () => { $('settings').hidden = false; $('menu').hidden = true; $('opt-contrast').focus(); };
 $('set-back').onclick = () => { $('settings').hidden = true; $('menu').hidden = false; $('btn-settings').focus(); };
@@ -411,7 +683,52 @@ $('btn-reset').onclick = () => { if (confirm('Apagar todo o progresso salvo?')) 
   $(id).checked = Save.data.settings[k];
   $(id).onchange = e => { Save.data.settings[k] = e.target.checked; Save.save(); Save.applySettings(); };
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('settings').hidden) $('set-back').click(); });
+
+// Controles de áudio e música
+$('opt-music').checked = Save.data.settings.music !== false;
+$('opt-music').onchange = e => {
+  Save.data.settings.music = e.target.checked;
+  Save.save();
+  e.target.checked ? Music.start() : Music.stop();
+  Music.updateUI();
+  window.UI.showToast(e.target.checked ? '🔊 Som ativado' : '🔇 Mudo ativado');
+};
+
+const selTrack = $('select-track');
+if (selTrack) {
+  selTrack.value = String(Music.getTrackIndex());
+  selTrack.onchange = e => {
+    const t = Music.setTrack(parseInt(e.target.value, 10));
+    window.UI.showToast('🎵 ' + t.name);
+  };
+}
+
+$('btn-mute-hud').onclick = () => {
+  const enabled = Music.toggleMute();
+  window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+};
+
+$('btn-track-hud').onclick = () => {
+  const t = Music.nextTrack();
+  window.UI.showToast('🎵 Tocando: ' + t.name);
+};
+
+// Teclado global
+document.addEventListener('keydown', e => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+  if (e.key === 'Escape' && !$('settings').hidden) {
+    $('set-back').click();
+    return;
+  }
+  if (e.key === 'm' || e.key === 'M') {
+    const enabled = Music.toggleMute();
+    window.UI.showToast(enabled ? '🔊 Som ativado' : '🔇 Mudo ativado');
+  } else if (e.key === 't' || e.key === 'T') {
+    const t = Music.nextTrack();
+    window.UI.showToast('🎵 Tocando: ' + t.name);
+  }
+});
+
 // Controles de toque (aparecem em telas sensíveis ao toque)
 if (matchMedia('(pointer: coarse)').matches) $('touch').hidden = false;
 document.querySelectorAll('.dpad button').forEach(b => {
@@ -422,6 +739,9 @@ document.querySelectorAll('.dpad button').forEach(b => {
 $('btn-act').addEventListener('click', () => window.UI.scene && window.UI.scene.interact());
 // Pausa automática: o jogo começa pausado atrás do menu principal
 game.events.once('ready', () => { const w = setInterval(() => { if (window.UI.scene && window.UI.scene.scene.isActive()) { window.UI.scene.scene.pause(); clearInterval(w); } }, 50); });
+
+// Inicializa estado visual da música
+Music.updateUI();
 
 </script>
 </body>
