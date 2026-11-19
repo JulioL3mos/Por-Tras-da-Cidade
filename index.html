@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Por Trás da Cidade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="wrap">
+  <div id="game" role="img" aria-label="Mapa de Vila Horizonte, visto de cima. Use o teclado ou o direcional na tela para andar."></div>
+  <p id="region" class="hud" aria-live="polite"></p>
+  <p id="hint" class="hud">Chegue perto de uma pessoa e aperte E ou Espaço</p>
+
+  <section id="dialog" class="panel" role="dialog" aria-modal="true" aria-labelledby="dlg-name" hidden>
+    <h2 id="dlg-name"></h2><p id="dlg-text"></p>
+    <ul id="dlg-clues" hidden></ul>
+    <div id="dlg-opts" role="group" aria-label="Alternativas"></div>
+    <p id="dlg-fb" role="status" aria-live="polite"></p>
+    <button id="dlg-ok" class="btn">Continuar</button>
+  </section>
+
+  <section id="menu" class="overlay" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+    <div class="panel">
+      <h1 id="menu-title">Por Trás da Cidade</h1>
+      <p class="slogan">Nem todo herói usa capa. Alguns fazem a cidade funcionar.</p>
+      <button id="btn-play" class="btn">Jogar</button>
+      <button id="btn-settings" class="btn">Acessibilidade</button>
+      <button id="btn-reset" class="btn ghost">Apagar progresso</button>
+    </div>
+  </section>
+
+  <section id="settings" class="overlay" role="dialog" aria-modal="true" aria-labelledby="set-title" hidden>
+    <div class="panel">
+      <h2 id="set-title">Acessibilidade</h2>
+      <label class="opt"><input type="checkbox" id="opt-contrast"> Alto contraste</label>
+      <label class="opt"><input type="checkbox" id="opt-bigfont"> Letras maiores</label>
+      <label class="opt"><input type="checkbox" id="opt-calm"> Reduzir animações</label>
+      <button id="set-back" class="btn">Voltar</button>
+    </div>
+  </section>
+
+  <button id="btn-pause" class="btn small" aria-label="Pausar e abrir o menu" hidden>Menu</button>
+
+  <div id="touch" hidden>
+    <div class="dpad" role="group" aria-label="Direcional">
+      <button data-d="up" aria-label="Para cima">▲</button>
+      <button data-d="left" aria-label="Para a esquerda">◀</button>
+      <button data-d="right" aria-label="Para a direita">▶</button>
+      <button data-d="down" aria-label="Para baixo">▼</button>
+    </div>
+    <button id="btn-act" class="btn act" aria-label="Interagir">E</button>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<script src="js/state.js"></script>
+<script src="js/data/npcs.js"></script>
+<script src="js/data/missions.js"></script>
+<script src="js/scenes/BootScene.js"></script>
+<script src="js/scenes/WorldScene.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
