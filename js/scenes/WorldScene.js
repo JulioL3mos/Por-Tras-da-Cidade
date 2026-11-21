@@ -7,6 +7,12 @@ const BUILDINGS = [
   [3,20,9,6,0xd9468f],[14,25,8,6,0xffffff],
   [28,26,5,4,0xc8503c],[36,26,6,4,0x8a8a8a],[44,25,4,4,0x4a6fa5]
 ];
+// Cercas que fecham as regiões ainda bloqueadas: [x, y, largura, altura] em tiles
+const FENCES = {
+  2: [[27,0,1,16],[27,15,23,1]],
+  3: [[0,19,24,1],[23,19,1,17]],
+  4: [[27,19,23,1],[27,19,1,17]]
+};
 class WorldScene extends Phaser.Scene {
   constructor() { super('World'); }
   create() {
@@ -31,7 +37,8 @@ class WorldScene extends Phaser.Scene {
       if (!Save.data.settings.calm) this.tweens.add({ targets: s.mark, y: s.y - 36, yoyo: true, repeat: -1, duration: 600 });
       return s;
     });
-    this.player = this.physics.add.sprite(25*T + 16, 17*T, 'player');
+    this.buildFences();
+    this.player = this.physics.add.sprite(20*T + 16, 17*T + 16, 'player');
     this.player.body.setSize(16, 12).setOffset(4, 20); this.player.setCollideWorldBounds(true);
     this.physics.world.setBounds(0, 0, W, H);
     this.physics.add.collider(this.player, this.walls);
@@ -44,10 +51,45 @@ class WorldScene extends Phaser.Scene {
     this.keys.ESC.on('down', () => window.UI.togglePause());
     this.input.keyboard.on('keydown-M', () => window.handleMuteShortcut && window.handleMuteShortcut());
     this.input.keyboard.on('keydown-T', () => window.handleTrackShortcut && window.handleTrackShortcut());
-    window.UI.bindScene(this); this.refreshMarks();
+    window.UI.bindScene(this); this.refreshMarks(); this.checkUnlocks(false); this.lastWarn = 0;
   }
   refreshMarks() { this.npcs.forEach(n => n.mark.setVisible(!Save.data.stars.includes(n.npc.id))); }
-  regionAt(x, y) { return (x < 25*T ? 0 : 1) + (y < 17*T ? 0 : 2) + 1; }
+  buildFences() {
+    this.fences = {}; this.fenceRects = {};
+    Object.entries(FENCES).forEach(([r, segs]) => {
+      this.fenceRects[r] = segs.map(([x, y, w, h]) => ({ x: x*T, y: y*T, w: w*T, h: h*T }));
+      this.fences[r] = segs.map(([x, y, w, h]) => {
+        const s = this.add.tileSprite(x*T, y*T, w*T, h*T, 'fence').setOrigin(0).setDepth(y*T + h*T);
+        this.physics.add.existing(s, true); this.walls.add(s); return s;
+      });
+    });
+  }
+  checkUnlocks(announce) {
+    [2, 3, 4].forEach(r => {
+      if (this.fences[r] && regionUnlocked(r)) {
+        this.fences[r].forEach(s => { if (s.body) s.body.enable = false; this.walls.remove(s, true, true); });
+        this.fences[r] = null;
+        if (announce) window.UI.showToast('Nova região liberada: ' + REGIONS[r - 1].name + '! Siga pelas estradas.');
+      }
+    });
+  }
+  warnLocked() {
+    const p = this.player;
+    if (this.time.now - this.lastWarn < 5000) return;
+    for (const r of [2, 3, 4]) {
+      if (!this.fences[r]) continue;
+      if (this.fenceRects[r].some(f => p.x > f.x - 28 && p.x < f.x + f.w + 28 && p.y > f.y - 28 && p.y < f.y + f.h + 28)) {
+        this.lastWarn = this.time.now;
+        window.UI.showToast('Região fechada: ' + REGIONS[r - 1].name + '. Conclua as 3 missões de ' + REGIONS[r - 2].name + ' para abrir o caminho.');
+        return;
+      }
+    }
+  }
+  regionAt(x, y) {
+    const tx = Math.floor(x / T), ty = Math.floor(y / T);
+    if ((tx >= 24 && tx <= 26) || (ty >= 16 && ty <= 18)) return 0;
+    return (tx < 24 ? 1 : 2) + (ty < 16 ? 0 : 2);
+  }
   nearestNpc() {
     let best = null, d = 56;
     this.npcs.forEach(n => { const k = Phaser.Math.Distance.Between(n.x, n.y, this.player.x, this.player.y); if (k < d) { d = k; best = n; } });
@@ -69,6 +111,7 @@ class WorldScene extends Phaser.Scene {
     p.setDepth(p.y + 16);
     if (dx) p.setFlipX(dx < 0);
     const r = this.regionAt(p.x, p.y);
-    if (r !== this.regionId) { this.regionId = r; window.UI.announceRegion(REGIONS[r - 1].name); }
+    if (r !== this.regionId) { this.regionId = r; window.UI.announceRegion(r ? REGIONS[r - 1].name : 'Estradas de Vila Horizonte'); }
+    this.warnLocked();
   }
 }

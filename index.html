@@ -26,6 +26,7 @@
       <h2 id="dlg-name"></h2>
       <p id="dlg-text"></p>
       <ul id="dlg-clues" hidden></ul>
+      <div id="dlg-puzzle" hidden></div>
       <div id="dlg-opts" role="group" aria-label="Alternativas"></div>
       <p id="dlg-fb" role="status" aria-live="polite"></p>
       <button id="dlg-ok" class="btn">Continuar</button>
@@ -36,12 +37,35 @@
         <h1 id="menu-title">Por Trás da Cidade</h1>
         <p class="slogan">Nem todo herói usa capa. Alguns fazem a cidade funcionar.</p>
         <button id="btn-play" class="btn">Jogar</button>
+        <button id="btn-progress" class="btn">Progresso e mural</button>
         <div class="menu-audio-box">
           <button id="btn-track-menu" class="btn ghost small" type="button" aria-label="Trocar música">🎵 1. Vila Chiptune</button>
           <button id="btn-mute-menu" class="btn ghost small" type="button" aria-label="Alternar mudo">🔊 Som Ligado</button>
         </div>
         <button id="btn-settings" class="btn">Configurações & Áudio</button>
         <button id="btn-reset" class="btn ghost">Apagar progresso</button>
+      </div>
+    </section>
+
+    <section id="progress" class="overlay" role="dialog" aria-modal="true" aria-labelledby="prog-title" hidden>
+      <div class="panel wide">
+        <h2 id="prog-title">Seu progresso</h2>
+        <p id="prog-stars"></p>
+        <ul id="prog-regions" class="prog-list"></ul>
+        <h3>Mural de profissões</h3>
+        <ul id="mural" class="mural"></ul>
+        <button id="prog-final" class="btn" hidden>Ver tela final</button>
+        <button id="prog-back" class="btn">Voltar</button>
+      </div>
+    </section>
+
+    <section id="final" class="overlay" role="dialog" aria-modal="true" aria-labelledby="final-title" hidden>
+      <div class="panel wide">
+        <p id="final-stars" class="final-stars"></p>
+        <h2 id="final-title">Guardião de Vila Horizonte</h2>
+        <p id="final-msg">Agora você conhece pessoas que talvez nunca tivesse percebido. Lembre-se: uma cidade não funciona sozinha. Por trás de cada serviço, existe alguém fazendo a diferença.</p>
+        <button id="final-mural" class="btn">Ver o mural de profissões</button>
+        <button id="final-continue" class="btn ghost">Continuar explorando</button>
       </div>
     </section>
 
@@ -67,6 +91,7 @@
       <button id="btn-mute-hud" class="btn small" aria-label="Alternar som (M)" title="Mudo (tecla M)">🔊</button>
       <button id="btn-track-hud" class="btn small" aria-label="Trocar música (T)" title="Trocar música (tecla T)">🎵
         1</button>
+      <button id="btn-progress-hud" class="btn small" aria-label="Abrir progresso e mural de profissões">★ Progresso</button>
       <button id="btn-pause" class="btn small" aria-label="Pausar e abrir o menu">Menu</button>
     </div>
 
@@ -85,6 +110,13 @@
   <script src="js/music.js"></script>
   <script src="js/data/npcs.js"></script>
   <script src="js/data/missions.js"></script>
+  <script src="js/data/puzzles.js"></script>
+  <script src="js/puzzles/puzzles.js"></script>
+  <script src="js/minigames/percurso.js"></script>
+  <script src="js/minigames/tocar.js"></script>
+  <script src="js/minigames/canos.js"></script>
+  <script src="js/minigames/obra.js"></script>
+  <script src="js/minigames/horta.js"></script>
   <script src="js/scenes/BootScene.js"></script>
   <script src="js/scenes/WorldScene.js"></script>
   <script src="js/main.js"></script>

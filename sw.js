@@ -1,5 +1,5 @@
 // Service worker: guarda o jogo no aparelho para abrir rápido e funcionar offline.
-const CACHE = 'ptc-v3';
+const CACHE = 'ptc-v8';
 const FILES = [
   './',
   'index.html',
@@ -7,12 +7,19 @@ const FILES = [
   'manifest.json',
   'icon-192.png',
   'icon-512.png',
-  'audio/tema-cidade.wav',
+  'audio/tema-cidade.mp3',
   'js/lib/phaser.min.js',
   'js/state.js',
   'js/music.js',
   'js/data/npcs.js',
   'js/data/missions.js',
+  'js/data/puzzles.js',
+  'js/puzzles/puzzles.js',
+  'js/minigames/percurso.js',
+  'js/minigames/tocar.js',
+  'js/minigames/canos.js',
+  'js/minigames/obra.js',
+  'js/minigames/horta.js',
   'js/scenes/BootScene.js',
   'js/scenes/WorldScene.js',
   'js/main.js'

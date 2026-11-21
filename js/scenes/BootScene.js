@@ -28,6 +28,11 @@ class BootScene extends Phaser.Scene {
       for (let y = 6; y < 32; y += 8) g.fillRect(0, y, 32, 2);
     });
     this.tex('door', 32, 32, g => { g.fillStyle(0x5b3a1e).fillRect(6, 4, 20, 28).fillStyle(0xffd166).fillRect(21, 18, 3, 3); });
+    this.tex('fence', 32, 32, g => {
+      g.fillStyle(0x8a5a2b).fillRect(0, 8, 32, 5).fillRect(0, 19, 32, 5);
+      g.fillStyle(0x5b3a1e).fillRect(2, 2, 6, 28).fillRect(24, 2, 6, 28);
+      g.fillStyle(0xffd166).fillRect(3, 2, 4, 3).fillRect(25, 2, 4, 3);
+    });
     this.tex('tree', 32, 40, g => {
       g.fillStyle(0x6b4423).fillRect(13, 26, 6, 14);
       g.fillStyle(0x2f8a3e).fillCircle(16, 16, 15).fillStyle(0x3fa84e).fillCircle(11, 12, 7);

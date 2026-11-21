@@ -431,3 +431,45 @@ body.calm * {
     font-size: 10px
   }
 }
+/* Puzzles */
+#dlg-puzzle[hidden]{display:none}
+.pz-intro{font-weight:700;margin:0 0 10px}
+.pz-list{list-style:none;margin:0;padding:0}
+.pz-row{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap}
+.pz-row>span,.pz-row>label{flex:1 1 200px;font-weight:600}
+.pz-move{width:56px;min-height:48px;margin:0;padding:6px}
+.pz-select{flex:1 1 220px;min-height:48px;font:inherit;padding:8px;border:4px solid var(--ink,#1d2547);background:var(--paper,#fff6dc);color:var(--ink,#1d2547)}
+.pz-set{border:3px solid var(--ink,#1d2547);margin:8px 0;padding:6px 10px}
+.pz-set legend{font-weight:700;padding:0 6px}
+.pz-choice{display:flex;align-items:center;gap:10px;min-height:48px;font-weight:600}
+.pz-choice input{width:28px;height:28px;flex:none}
+
+/* Mini games */
+.mg-canvas{display:block;width:100%;max-width:640px;margin:8px auto;image-rendering:pixelated;border:4px solid var(--ink,#1d2547);background:#4a4f63}
+#dlg-puzzle progress{display:block;width:100%;max-width:640px;margin:0 auto 8px;height:16px}
+.mg-help{margin:6px 0;font-size:.9em}
+.mg-pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:640px;margin:8px auto}
+.mg-pad .btn{margin:0;min-height:56px;touch-action:none;font-size:24px}
+@media (pointer:fine){.mg-pad{display:none}}
+.mg-info{margin:4px 0;font-weight:700;text-align:center}
+
+/* Progresso, mural e final */
+.panel.wide{max-width:780px;max-height:90vh;overflow:auto}
+.prog-list{margin:0 0 12px;padding-left:22px;line-height:1.6}
+.mural{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.mural .card{display:flex;gap:10px;align-items:flex-start;border:4px solid var(--ink,#1d2547);padding:8px;background:var(--paper,#fff6dc)}
+.mural .card.locked{border-style:dashed;opacity:.9}
+.mural canvas{width:72px;height:96px;flex:none;image-rendering:pixelated}
+.mural .st{margin:2px 0;font-weight:700;font-size:.85em}.mural .ab{margin:2px 0;font-size:.85em;line-height:1.35}
+.final-stars{font-size:1.4em;letter-spacing:2px;text-align:center;margin:0 0 8px;color:var(--brick,#c8503c)}
+#final-msg{line-height:1.6}
+
+/* Obra: bandeja de peças e arrastar */
+.mg-tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-width:640px;margin:8px auto}
+.mg-piece{display:flex;flex-direction:column;align-items:center;gap:4px;margin:0;min-height:88px;padding:6px;touch-action:none;cursor:grab}
+.mg-piece canvas{width:48px;height:48px;image-rendering:pixelated}
+.mg-piece span{font-size:.8em;font-weight:700;text-align:center}
+.mg-piece:disabled{opacity:.45;cursor:default}
+.mg-ghost{position:fixed;z-index:50;pointer-events:none;width:48px;height:48px;opacity:.9}
+.mg-ghost canvas{width:48px;height:48px;image-rendering:pixelated}
+.mg-canvas.mg-over{outline:5px dashed var(--brick,#c8503c);outline-offset:2px}

@@ -1,6 +1,6 @@
 // Trilha sonora de "Por Trás da Cidade":
 // Trilha 1: "Vila Chiptune (8-bit)" - chiptune procedural via Web Audio API.
-// Trilha 2: "Tema da Cidade" - trilha completa importada (audio/tema-cidade.wav).
+// Trilha 2: "Tema da Cidade" - trilha completa importada (audio/tema-cidade.mp3).
 
 const Music = {
   ctx: null, master: null, timer: null, step: 0, next: 0, playing: false,
@@ -10,7 +10,7 @@ const Music = {
   
   tracks: [
     { id: 'synth', name: '1. Vila Chiptune (8-bit)', type: 'synth' },
-    { id: 'theme', name: '2. Tema da Cidade', type: 'audio', src: 'audio/tema-cidade.wav' }
+    { id: 'theme', name: '2. Tema da Cidade', type: 'audio', src: 'audio/tema-cidade.mp3' }
   ],
   audioEl: null,
 
@@ -46,7 +46,7 @@ const Music = {
 
   initAudio() {
     if (this.audioEl) return;
-    this.audioEl = new Audio('audio/tema-cidade.wav');
+    this.audioEl = new Audio('audio/tema-cidade.mp3');
     this.audioEl.loop = true;
     this.audioEl.volume = 0.55;
     this.audioEl.preload = 'auto';

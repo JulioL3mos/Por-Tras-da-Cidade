@@ -1,7 +1,7 @@
 // Estado global e salvamento automático (localStorage)
 const Save = {
   key: 'por-tras-da-cidade-v1',
-  data: { stars: [], settings: { contrast: false, bigfont: false, calm: false, music: true, trackIndex: 0 } },
+  data: { stars: [], finalShown: false, settings: { contrast: false, bigfont: false, calm: false, music: true, trackIndex: 0 } },
   load() {
     try {
       const stored = JSON.parse(localStorage.getItem(this.key));
@@ -13,7 +13,7 @@ const Save = {
     this.applySettings();
   },
   save() { try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) { } },
-  reset() { this.data.stars = []; this.save(); },
+  reset() { this.data.stars = []; this.data.finalShown = false; this.save(); },
   applySettings() {
     const s = this.data.settings;
     document.body.classList.toggle('contrast', !!s.contrast);

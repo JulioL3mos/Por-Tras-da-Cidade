@@ -15,16 +15,16 @@ window.UI = {
     }, 2200);
   },
   openDialog(npc, onClose) {
-    const m = MISSIONS[npc.id], dlg = $('dialog'), text = $('dlg-text'), list = $('dlg-clues'), opts = $('dlg-opts'), fb = $('dlg-fb'), ok = $('dlg-ok');
-    const close = () => { dlg.hidden = true; onClose(); };
-    const clear = () => { list.innerHTML = ''; list.hidden = true; opts.innerHTML = ''; fb.textContent = ''; ok.hidden = false; };
+    const m = MISSIONS[npc.id], pz = (typeof PUZZLES !== 'undefined' && typeof Puzzles !== 'undefined') ? PUZZLES[npc.id] : null, pzRoot = $('dlg-puzzle'), dlg = $('dialog'), text = $('dlg-text'), list = $('dlg-clues'), opts = $('dlg-opts'), fb = $('dlg-fb'), ok = $('dlg-ok');
+    const close = () => { dlg.hidden = true; onClose(); this.checkFinal(); };
+    const clear = () => { pzRoot.innerHTML = ''; pzRoot.hidden = true; list.innerHTML = ''; list.hidden = true; opts.innerHTML = ''; fb.textContent = ''; ok.hidden = false; };
     const next = (label, fn) => { ok.textContent = label; ok.onclick = fn; ok.hidden = false; ok.focus(); };
     $('dlg-name').textContent = npc.name + ' — ' + npc.job + ' | Missão: ' + npc.title;
     dlg.hidden = false;
     const win = () => {
       clear();
       if (!Save.data.stars.includes(npc.id)) { Save.data.stars.push(npc.id); Save.save(); }
-      this.announceRegion(); if (this.scene) this.scene.refreshMarks();
+      this.announceRegion(); if (this.scene) { this.scene.refreshMarks(); this.scene.checkUnlocks(true); }
       text.textContent = '★ ' + m.feedback + ' ' + m.about;
       next('Continuar', close);
     };
@@ -35,13 +35,47 @@ window.UI = {
         opts.appendChild(b); });
       opts.firstChild.focus();
     };
+    const puzzle = () => { clear(); text.textContent = 'Desafio da missão'; ok.hidden = true; Puzzles.open(pzRoot, pz, win, msg => { fb.textContent = msg; }); };
     const clues = () => {
       clear(); text.textContent = 'Pistas que encontrei:';
       m.clues.forEach(c => { const li = document.createElement('li'); li.textContent = c; list.appendChild(li); }); list.hidden = false;
-      next('Responder à pergunta', ask);
+      next(pz ? 'Resolver o desafio' : 'Responder à pergunta', pz ? puzzle : ask);
     };
     if (Save.data.stars.includes(npc.id)) { win(); return; }
     clear(); text.textContent = m.situation; next('Investigar pistas', clues);
+  },
+  progFrom: 'menu', progWasRunning: false,
+  openProgress(from) {
+    this.progFrom = from; const s = this.scene;
+    if (from === 'menu') $('menu').hidden = true;
+    else if (from === 'final') $('final').hidden = true;
+    else if (s && s.scene) { this.progWasRunning = !s.scene.isPaused(); if (this.progWasRunning) { if (s.input && s.input.keyboard) s.input.keyboard.resetKeys(); s.scene.pause(); } }
+    const st = Save.data.stars;
+    $('prog-stars').textContent = 'Estrelas de reconhecimento: ' + st.length + ' de 12.';
+    const reg = $('prog-regions'); reg.innerHTML = '';
+    REGIONS.forEach(r => { const d = REGION_MISSIONS[r.id].filter(id => st.includes(id)).length, open = regionUnlocked(r.id);
+      const li = document.createElement('li'); li.textContent = r.name + ': ' + d + ' de 3 missões — ' + (open ? 'Aberta' : 'Fechada (conclua a região anterior)'); reg.appendChild(li); });
+    const mural = $('mural'); mural.innerHTML = '';
+    NPCS.forEach(n => { const ok = st.includes(n.id), mi = MISSIONS[n.id], li = document.createElement('li'); li.className = 'card' + (ok ? '' : ' locked');
+      const cv = document.createElement('canvas'); cv.width = 72; cv.height = 96; cv.setAttribute('aria-hidden', 'true'); const c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
+      if (ok) { try { c.drawImage(window.game.textures.get('npc' + n.id).getSourceImage(), 0, 0, 24, 32, 0, 0, 72, 96); } catch (e) {} } else { c.fillStyle = '#1d2547'; c.fillRect(0, 0, 72, 96); c.fillStyle = '#fff6dc'; c.font = 'bold 40px monospace'; c.fillText('?', 24, 62); }
+      const t = document.createElement('div'); const about = ok ? mi.about : 'Profissão ainda não descoberta. Conclua a missão "' + n.title + '" para conhecer.';
+      t.innerHTML = '<strong></strong><p class="st"></p><p class="ab"></p>'; t.children[0].textContent = ok ? n.job : 'A descobrir'; t.children[1].textContent = ok ? '★ Descoberta — ' + n.name : 'Missão ' + n.id; t.children[2].textContent = about;
+      li.append(cv, t); mural.appendChild(li); });
+    $('prog-final').hidden = st.length < 12;
+    $('progress').hidden = false; $('prog-back').focus();
+  },
+  closeProgress() {
+    $('progress').hidden = true; const s = this.scene;
+    if (this.progFrom === 'menu') { $('menu').hidden = false; $('btn-progress').focus(); }
+    else if (this.progFrom === 'final') { $('final').hidden = false; $('final-continue').focus(); }
+    else if (this.progWasRunning && s && s.scene) { s.scene.resume(); if (window.game && window.game.canvas) window.game.canvas.focus(); }
+  },
+  checkFinal() { if (Save.data.stars.length >= 12 && !Save.data.finalShown) this.showFinal(); },
+  showFinal() {
+    const s = this.scene; if (s && s.scene && !s.scene.isPaused()) { if (s.input && s.input.keyboard) s.input.keyboard.resetKeys(); s.scene.pause(); }
+    $('final-stars').textContent = '★ '.repeat(12).trim(); $('final-stars').setAttribute('aria-label', '12 de 12 estrelas');
+    $('final').hidden = false; $('final-continue').focus();
   },
   togglePause() {
     const m = $('menu'), s = this.scene; if (!s) return;
@@ -94,7 +128,7 @@ $('btn-play').onclick = () => {
 $('btn-pause').onclick = () => window.UI.togglePause();
 $('btn-settings').onclick = () => { $('settings').hidden = false; $('menu').hidden = true; $('opt-contrast').focus(); };
 $('set-back').onclick = () => { $('settings').hidden = true; $('menu').hidden = false; $('btn-settings').focus(); };
-$('btn-reset').onclick = () => { if (confirm('Apagar todo o progresso salvo?')) { Save.reset(); alert('Progresso apagado.'); } };
+$('btn-reset').onclick = () => { if (confirm('Apagar todo o progresso salvo?')) { Save.reset(); location.reload(); } };
 
 // Opções de acessibilidade
 [['opt-contrast','contrast'],['opt-bigfont','bigfont'],['opt-calm','calm']].forEach(([id, k]) => {
@@ -246,3 +280,15 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) naviga
 
 // Inicializa estado visual da música
 Music.updateUI();
+
+// Progresso, mural e tela final
+$('btn-progress').onclick = () => window.UI.openProgress('menu');
+$('btn-progress-hud').onclick = () => window.UI.openProgress('hud');
+$('prog-back').onclick = () => window.UI.closeProgress();
+$('prog-final').onclick = () => { $('progress').hidden = true; window.UI.showFinal(); };
+$('final-mural').onclick = () => window.UI.openProgress('final');
+$('final-continue').onclick = () => {
+  Save.data.finalShown = true; Save.save(); $('final').hidden = true;
+  const s = window.UI.scene; if (s && s.scene) { s.scene.resume(); if (window.game && window.game.canvas) window.game.canvas.focus(); }
+};
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('progress').hidden) $('prog-back').click(); });

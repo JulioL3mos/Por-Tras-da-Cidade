@@ -17,3 +17,7 @@ const NPCS = [
   { id: 11, name: 'Zeca',        job: 'Trabalhador rural',  x: 41, y: 22, color: 0xb5a02a, title: 'Quem trabalha no campo?' },
   { id: 12, name: 'Ana',         job: 'Saneamento',         x: 44, y: 30, color: 0x4a6fa5, title: 'A água que ninguém vê' }
 ];
+
+// Cada região abre quando as 3 missões da região anterior estão concluídas.
+const REGION_MISSIONS = { 1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9], 4: [10, 11, 12] };
+function regionUnlocked(r) { return r === 1 || REGION_MISSIONS[r - 1].every(id => Save.data.stars.includes(id)); }
