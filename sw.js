@@ -1,5 +1,5 @@
 // Service worker: guarda o jogo no aparelho para abrir rápido e funcionar offline.
-const CACHE = 'ptc-v8';
+const CACHE = 'ptc-v11';
 const FILES = [
   './',
   'index.html',
@@ -20,6 +20,11 @@ const FILES = [
   'js/minigames/canos.js',
   'js/minigames/obra.js',
   'js/minigames/horta.js',
+  'js/minigames/triagem.js',
+  'js/minigames/prato.js',
+  'js/minigames/portaria.js',
+  'js/minigames/varrer.js',
+  'js/minigames/fazenda.js',
   'js/scenes/BootScene.js',
   'js/scenes/WorldScene.js',
   'js/main.js'

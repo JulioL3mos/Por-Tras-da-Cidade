@@ -99,3 +99,21 @@ O nível de desafio ficou bom. O ponto a melhorar é a **variedade de mecânicas
 
 Mecânicas por missão depois desta rodada: percurso (moto, ônibus, caminhão), conectar canos, arrastar peças, horta, e as três novas (varrer, empurrar e triar), além dos puzzles do porteiro, da merendeira e do agricultor.
 O mini game de "tocar" (`tocar.js`) sai do jogo quando as missões 7 e 9 forem refeitas.
+
+## 12. Estado após a rodada de variedade 2 (tudo implementado)
+| # | NPC | Mecânica | Arquivo |
+|---|---|---|---|
+| 1 | Gari | Varrer a rua: arrastar a vassoura até o contêiner, com vento e pedestres | `varrer.js` |
+| 2 | Coletor | Percurso: caminhão recolhendo sacos | `percurso.js` |
+| 3 | Porteiro | "Quem entra?": ler a prancheta e decidir | `portaria.js` |
+| 4 | Motorista | Percurso: ônibus parando nas paradas | `percurso.js` |
+| 5 | Entregador | Percurso: moto | `percurso.js` |
+| 6 | Construção civil | Arrastar peças e ver a creche crescer | `obra.js` |
+| 7 | Limpeza escolar | Tocar nas manchas das carteiras | `tocar.js` |
+| 8 | Merendeira | Higiene e montar o prato de 3 alunos | `prato.js` |
+| 9 | Limpeza hospitalar | Esteira de resíduos: escolher a lixeira | `triagem.js` |
+| 10 | Agricultor | Rotina da fazenda: arar, plantar, regar e carregar | `fazenda.js` |
+| 11 | Trabalhador rural | Horta com plantas que crescem | `horta.js` |
+| 12 | Saneamento | Conectar canos | `canos.js` |
+
+Observações: o `tocar.js` mantém só o uso da escola; o código dos temas "hospital" e "campo" e o veículo "gari" do `percurso.js` ficaram sem uso e podem ser removidos numa limpeza futura. Os puzzles em `js/puzzles/puzzles.js` (ordenar, associar, classificar e selecionar) ficaram como reserva.

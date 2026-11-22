@@ -473,3 +473,16 @@ body.calm * {
 .mg-ghost{position:fixed;z-index:50;pointer-events:none;width:48px;height:48px;opacity:.9}
 .mg-ghost canvas{width:48px;height:48px;image-rendering:pixelated}
 .mg-canvas.mg-over{outline:5px dashed var(--brick,#c8503c);outline-offset:2px}
+
+/* Triagem de resíduos */
+.mg-bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;max-width:640px;margin:8px auto}
+.mg-bin{display:flex;align-items:center;gap:8px;margin:0;min-height:64px;padding:6px 8px;text-align:left}
+.mg-bin canvas{width:40px;height:44px;flex:none;image-rendering:pixelated}
+.mg-bin strong{display:block;font-size:.85em}.mg-bin small{display:block;font-size:.7em;font-weight:600}
+
+/* Portaria */
+.mg-visitante{margin:6px auto;max-width:640px;font-weight:600;line-height:1.4}
+.mg-h{margin:10px auto 4px;max-width:640px}
+.mg-prancheta{max-width:640px;margin:0 auto 8px;padding:8px 8px 8px 26px;border:4px solid var(--ink,#1d2547);background:var(--paper,#fff6dc);font-size:.9em;line-height:1.4}
+.mg-acoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;max-width:640px;margin:8px auto}
+.mg-acoes .btn{margin:0}

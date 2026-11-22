@@ -2,7 +2,7 @@
 const Puzzles = {
   el(tag, props, ...kids) { const e = Object.assign(document.createElement(tag), props || {}); kids.forEach(k => e.append(k)); return e; },
   open(root, cfg, done, say) {
-    if (['tocar', 'canos', 'obra', 'horta'].includes(cfg.type) && typeof Minigames !== 'undefined') return Minigames[cfg.type](root, cfg, done, say);
+    if (['tocar', 'canos', 'obra', 'horta', 'triagem', 'prato', 'portaria', 'varrer', 'fazenda'].includes(cfg.type) && typeof Minigames !== 'undefined') return Minigames[cfg.type](root, cfg, done, say);
     if (['moto', 'onibus', 'coletor', 'gari'].includes(cfg.type) && typeof Minigames !== 'undefined') return Minigames.percurso(root, Object.assign({ veiculo: cfg.type }, cfg), done, say);
     root.innerHTML = ''; root.hidden = false; say('');
     root.append(this.el('p', { className: 'pz-intro', textContent: cfg.instrucao }));
