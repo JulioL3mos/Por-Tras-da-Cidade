@@ -17,8 +17,8 @@ window.UI = {
   openDialog(npc, onClose) {
     const m = MISSIONS[npc.id], pz = (typeof PUZZLES !== 'undefined' && typeof Puzzles !== 'undefined') ? PUZZLES[npc.id] : null, pzRoot = $('dlg-puzzle'), dlg = $('dialog'), text = $('dlg-text'), list = $('dlg-clues'), opts = $('dlg-opts'), fb = $('dlg-fb'), ok = $('dlg-ok');
     const close = () => { dlg.hidden = true; onClose(); this.checkFinal(); };
-    const clear = () => { pzRoot.innerHTML = ''; pzRoot.hidden = true; list.innerHTML = ''; list.hidden = true; opts.innerHTML = ''; fb.textContent = ''; ok.hidden = false; };
-    const next = (label, fn) => { ok.textContent = label; ok.onclick = fn; ok.hidden = false; ok.focus(); };
+    const clear = () => { pzRoot.innerHTML = ''; pzRoot.hidden = true; list.innerHTML = ''; list.hidden = true; opts.innerHTML = ''; fb.textContent = ''; ok.hidden = false; ok.className = 'btn'; };
+    const next = (label, fn) => { ok.textContent = label; ok.onclick = fn; ok.hidden = false; ok.className = 'btn'; ok.focus(); };
     $('dlg-name').textContent = npc.name + ' — ' + npc.job + ' | Missão: ' + npc.title;
     dlg.hidden = false;
     const win = () => {
@@ -35,11 +35,15 @@ window.UI = {
         opts.appendChild(b); });
       opts.firstChild.focus();
     };
-    const puzzle = () => { clear(); text.textContent = 'Desafio da missão'; ok.hidden = true; Puzzles.open(pzRoot, pz, win, msg => { fb.textContent = msg; }); };
+    const puzzle = () => {
+      clear(); text.textContent = 'Desafio da missão';
+      ok.textContent = 'Reiniciar desafio'; ok.onclick = puzzle; ok.className = 'btn ghost'; ok.hidden = false;
+      Puzzles.open(pzRoot, pz, win, msg => { fb.textContent = msg; });
+    };
     const clues = () => {
       clear(); text.textContent = 'Pistas que encontrei:';
       m.clues.forEach(c => { const li = document.createElement('li'); li.textContent = c; list.appendChild(li); }); list.hidden = false;
-      next(pz ? 'Resolver o desafio' : 'Responder à pergunta', pz ? puzzle : ask);
+      next(pz ? 'Iniciar desafio' : 'Responder à pergunta', pz ? puzzle : ask);
     };
     if (Save.data.stars.includes(npc.id)) { win(); return; }
     clear(); text.textContent = m.situation; next('Investigar pistas', clues);
